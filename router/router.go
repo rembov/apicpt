@@ -27,6 +27,8 @@ func SetupRouter() *gin.Engine {
 		postsGroup.GET("", handlers.GetPostsHandler)
 		postsGroup.POST("/:id", handlers.UpdatePostHandler)
 		postsGroup.PATCH("/:id/status", handlers.PublishPostHandler)
+		postsGroup.POST("/:postId/images", handlers.AddImageHandler)
+		postsGroup.DELETE("/:postId/images/:imageId", handlers.DeleteImageHandler)
 	}
 
 	return r
