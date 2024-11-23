@@ -37,7 +37,7 @@ func CreatePostHandler(c *gin.Context) {
 		Status:  "Draft",
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Пост создан", "id": postID})
+	c.JSON(http.StatusCreated, gin.H{"message": "Пост успешно создан", "id": postID})
 }
 
 // GetPostsHandler возвращает список постов
@@ -90,5 +90,5 @@ func PublishPostHandler(c *gin.Context) {
 	post.Status = input.Status
 	posts[postID] = post
 
-	c.JSON(http.StatusOK, gin.H{"message": "Пост опубликован"})
+	c.JSON(http.StatusOK, gin.H{"message": "Пост успешно создан"})
 }

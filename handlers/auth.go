@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"api/middleware"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
-	"time"
 )
 
 // Имитация базы данных
