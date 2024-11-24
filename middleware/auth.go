@@ -14,6 +14,7 @@ var jwtKey = []byte("super_secret_key")
 // Структура для JWT
 type Claims struct {
 	Email string `json:"email"`
+	Role  string `json:"role"` 
 	jwt.RegisteredClaims
 }
 
@@ -38,13 +39,15 @@ func AuthMiddleware(c *gin.Context) {
 	}
 
 	c.Set("email", claims.Email)
+	c.Set("role", claims.Role)
 	c.Next()
 }
 
 // GenerateToken генерирует новый токен
-func GenerateToken(email string, duration time.Duration) (string, error) {
+func GenerateToken(email string, role string, duration time.Duration) (string, error) {
 	claims := &Claims{
 		Email: email,
+		Role:  role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(duration)),
 		},

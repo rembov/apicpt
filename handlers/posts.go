@@ -20,9 +20,25 @@ type Post struct {
 
 // CreatePostHandler создает новый пост
 func CreatePostHandler(c *gin.Context) {
+	role, _ := c.Get("role")
+	if role != "Author" {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "Пользователь не является автором",
+		})
+		return
+	}
 	var input struct {
 		Title   string `json:"title" binding:"required"`
 		Content string `json:"content" binding:"required"`
+	}
+	
+	for _, post := range posts {
+        if post.Title == input.Title {
+            c.JSON(http.StatusConflict, gin.H{ 
+                "error": "Уникальный ключ уже исползьзовался",
+            })
+            return
+        }
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -47,11 +63,19 @@ func GetPostsHandler(c *gin.Context) {
 
 // UpdatePostHandler обновляет пост
 func UpdatePostHandler(c *gin.Context) {
+	role, _ := c.Get("role")
+	if role != "Author" && role != "Admin" {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "Доступ запрещен",
+		})
+		return
+	}
 	postID := c.Param("id")
 	var input struct {
 		Title   string `json:"title"`
 		Content string `json:"content"`
 	}
+	
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -72,6 +96,13 @@ func UpdatePostHandler(c *gin.Context) {
 
 // PublishPostHandler публикует пост
 func PublishPostHandler(c *gin.Context) {
+	role, _ := c.Get("role")
+	if role != "Admin" && role != "Author" {
+        c.JSON(http.StatusForbidden, gin.H{
+            "error": "Доступ запрещён: публикация поста доступна только автору или администратору.",
+        })
+        return
+    }
 	postID := c.Param("id")
 	var input struct {
 		Status string `json:"status" binding:"required,oneof=Published"`

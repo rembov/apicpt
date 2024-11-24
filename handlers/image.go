@@ -8,6 +8,13 @@ import (
 
 // AddImageHandler добавляет изображение к посту
 func AddImageHandler(c *gin.Context) {
+	role, _ := c.Get("role")
+	if role != "Admin" && role != "Author" {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "Доступ запрещен",
+		})
+		return
+	}
 	postID := c.Param("postId")
 
 	// Проверяем, существует ли пост
@@ -25,6 +32,13 @@ func AddImageHandler(c *gin.Context) {
 
 // DeleteImageHandler удаляет изображение из поста
 func DeleteImageHandler(c *gin.Context) {
+	role, _ := c.Get("role")
+	if role != "Admin" {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "Доступ запрещен",
+		})
+		return
+	}
 	postID := c.Param("postId")
 
 	// Проверяем, существует ли пост
