@@ -44,7 +44,7 @@ func DeleteImageHandler(c *gin.Context) {
 	// Проверяем, существует ли пост
 	post, exists := posts[postID]
 	if !exists {
-		c.JSON(404, gin.H{"error": "Пост не найден"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Пост не найден"})
 		return
 	}
 
