@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"api/internal/models"
 	"net/http"
 	"time"
 
@@ -8,17 +9,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// JWT ключ
-var jwtKey = []byte("super_secret_key")
-
-// Структура для JWT
-type Claims struct {
-	Email string `json:"email"`
-	Role  string `json:"role"` 
-	jwt.RegisteredClaims
-}
-
-// AuthMiddleware проверяет авторизацию
 func AuthMiddleware(c *gin.Context) {
 	tokenString := c.GetHeader("Authorization")
 	if tokenString == "" {
@@ -27,9 +17,9 @@ func AuthMiddleware(c *gin.Context) {
 		return
 	}
 
-	claims := &Claims{}
+	claims := &models.Claims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
-		return jwtKey, nil
+		return models.JwtKey, nil
 	})
 
 	if err != nil || !token.Valid {
@@ -42,10 +32,8 @@ func AuthMiddleware(c *gin.Context) {
 	c.Set("role", claims.Role)
 	c.Next()
 }
-
-// GenerateToken генерирует новый токен
 func GenerateToken(email string, role string, duration time.Duration) (string, error) {
-	claims := &Claims{
+	claims := &models.Claims{
 		Email: email,
 		Role:  role,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -53,5 +41,5 @@ func GenerateToken(email string, role string, duration time.Duration) (string, e
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(jwtKey)
+	return token.SignedString(models.JwtKey)
 }

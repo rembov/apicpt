@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"api/internal/services"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,22 +11,23 @@ import (
 func AddImageHandler(c *gin.Context) {
 	role, _ := c.Get("role")
 	if role != "Admin" && role != "Author" {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "Доступ запрещен",
-		})
+		c.JSON(http.StatusForbidden, gin.H{"error": "Доступ запрещен"})
 		return
 	}
+
 	postID := c.Param("postId")
-
-	// Проверяем, существует ли пост
-	post, exists := posts[postID]
-	if !exists {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Пост или картинка не найдены"})
+	var input struct {
+		ImageURL string `json:"image_url" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	post.Content += "[Image:]"
-	posts[postID] = post
+	if err := services.AddImageToPost(postID, input.ImageURL); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Изображение добавлено"})
 }
@@ -34,24 +36,16 @@ func AddImageHandler(c *gin.Context) {
 func DeleteImageHandler(c *gin.Context) {
 	role, _ := c.Get("role")
 	if role != "Admin" {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "Доступ запрещен",
-		})
+		c.JSON(http.StatusForbidden, gin.H{"error": "Доступ запрещен"})
 		return
 	}
+
 	postID := c.Param("postId")
 
-	// Проверяем, существует ли пост
-	post, exists := posts[postID]
-	if !exists {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Пост не найден"})
+	if err := services.RemoveImageFromPost(postID); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-
-	// Удаляем привязку к изображению из поста
-
-	post.Content = "[Image removed]"
-	posts[postID] = post
 
 	c.JSON(http.StatusOK, gin.H{"message": "Изображение удалено"})
 }

@@ -3,20 +3,18 @@ package router
 import (
 	"api/internal/handlers"
 	"api/internal/middleware"
-
+	"api/internal/services"
 	"github.com/gin-gonic/gin"
 )
 
-// SetupRouter настраивает маршруты
-func SetupRouter() *gin.Engine {
+func SetupRouter(authService *services.AuthService) *gin.Engine {
 	r := gin.Default()
-
-	// Эндпоинты аутентификации
+	authHandler := handlers.NewHandler(authService)
 	auth := r.Group("/api/auth")
 	{
-		auth.POST("/register", handlers.RegisterHandler)
-		auth.POST("/login", handlers.LoginHandler)
-		auth.POST("/refresh-token", handlers.RefreshTokenHandler)
+		auth.POST("/register",authHandler.RegisterHandler)
+		auth.POST("/login", authHandler.LoginHandler)
+		auth.POST("/refresh-token", authHandler.RefreshTokenHandler)
 	}
 
 	// Эндпоинты управления постами
