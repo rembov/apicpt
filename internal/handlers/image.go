@@ -6,8 +6,19 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
-
-// AddImageHandler добавляет изображение к посту
+// AddImageHandler
+// @Summary Добавление картинки к посту
+// @Tags Управление постами
+// @Description Добавляет изображение к посту
+// @Accept multipart/form-data
+// @Produce json
+// @Param postId path int true "Идентификатор поста"
+// @Param image formData file true "Изображение"
+// @Security bearerAuth
+// @Success 201 {string} string "Картинка добавлена к посту"
+// @Failure 404 {string} string "Пост не найден"
+// @Failure 403 {string} string "Доступ запрещен"
+// @Router /api/posts/{postId}/images [post]
 func AddImageHandler(c *gin.Context) {
 	role, _ := c.Get("role")
 	if role != "Admin" && role != "Author" {
@@ -31,8 +42,17 @@ func AddImageHandler(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Изображение добавлено"})
 }
-
-// DeleteImageHandler удаляет изображение из поста
+// DeleteImageHandler
+// @Summary Удаление картинки из поста
+// @Tags Управление постами
+// @Description Удаляет изображение из поста по идентификатору
+// @Param postId path int true "Идентификатор поста"
+// @Param imageId path int true "Идентификатор картинки"
+// @Security bearerAuth
+// @Success 200 {string} string "Картинка успешно удалена"
+// @Failure 404 {string} string "Пост или картинка не найдены"
+// @Failure 403 {string} string "Доступ запрещён"
+// @Router /api/posts/{postId}/images/{imageId} [delete]
 func DeleteImageHandler(c *gin.Context) {
 	role, _ := c.Get("role")
 	if role != "Admin" {

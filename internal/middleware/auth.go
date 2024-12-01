@@ -32,6 +32,7 @@ func AuthMiddleware(c *gin.Context) {
 	c.Set("role", claims.Role)
 	c.Next()
 }
+
 func GenerateToken(email string, role string, duration time.Duration) (string, error) {
 	claims := &models.Claims{
 		Email: email,

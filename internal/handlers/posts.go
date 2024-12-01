@@ -8,7 +8,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// CreatePostHandler создает новый пост
+// CreatePostHandler
+// @Summary Создание поста
+// @Tags Управление постами
+// @Description Создает новый пост с заголовком и содержимым
+// @Accept multipart/form-data
+// @Produce json
+// @Param idempotencyKey formData string true "Уникальный ключ"
+// @Param title formData string true "Заголовок поста"
+// @Param content formData string true "Содержимое поста"
+// @Security bearerAuth
+// @Success 201 {string} string "Пост успешно создан"
+// @Failure 403 {string} string "Пользователь не является автором"
+// @Failure 409 {string} string "Уникальный ключ уже использовался"
+// @Router /api/posts [post]
 func CreatePostHandler(c *gin.Context) {
 	role, _ := c.Get("role")
 	if role != "Author" {
@@ -30,13 +43,33 @@ func CreatePostHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "Пост успешно создан", "id": postID})
 }
 
-// GetPostsHandler возвращает список постов
+// GetPostsHandler
+// @Summary Получение списка постов
+// @Tags Получение постов
+// @Description Возвращает список постов
+// @Produce json
+// @Security bearerAuth
+// @Success 200 {array} string "Список постов"
+// @Router /api/posts [get]
 func GetPostsHandler(c *gin.Context) {
 	posts := services.GetPublishedPosts()
 	c.JSON(http.StatusOK, posts)
 }
 
-// UpdatePostHandler обновляет пост
+// UpdatePostHandler
+// @Summary Редактирование поста
+// @Tags Управление постами
+// @Description Редактирует пост по указанному идентификатору
+// @Accept multipart/form-data
+// @Produce json
+// @Param postId path int true "Идентификатор поста"
+// @Param title formData string false "Новый заголовок поста"
+// @Param content formData string false "Новое содержимое поста"
+// @Security bearerAuth
+// @Success 200 {string} string "Пост успешно обновлен"
+// @Failure 404 {string} string "Пост не найден"
+// @Failure 403 {string} string "Доступ запрещен"
+// @Router /api/posts/{postId} [post]
 func UpdatePostHandler(c *gin.Context) {
 	role, _ := c.Get("role")
 	if role != "Author" && role != "Admin" {
@@ -45,7 +78,7 @@ func UpdatePostHandler(c *gin.Context) {
 	}
 
 	postID := c.Param("id")
-	 
+
 	if err := c.ShouldBindJSON(&models.Input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -59,7 +92,19 @@ func UpdatePostHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Пост обновлен"})
 }
 
-// PublishPostHandler публикует пост
+// PublishPostHandler
+// @Summary Публикация поста
+// @Tags Управление постами
+// @Description Публикует пост по указанному идентификатору
+// @Accept multipart/form-data
+// @Produce json
+// @Param postId path int true "Идентификатор поста"
+// @Param status formData string true "Статус поста (Published)"
+// @Security bearerAuth
+// @Success 200 {string} string "Пост успешно опубликован"
+// @Failure 400 {string} string "Неверное значение статуса"
+// @Failure 404 {string} string "Пост не найден"
+// @Router /api/posts/{postId}/status [patch]
 func PublishPostHandler(c *gin.Context) {
 	role, _ := c.Get("role")
 	if role != "Admin" && role != "Author" {

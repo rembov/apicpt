@@ -4,312 +4,301 @@ info:
   description: "negr-blog"
   contact:
     email: "i7888@mail.ru"
-servers:
-  - url: "http://127.0.0.1:1488"
-    description: "SVO"
-
-tags:
-  - name: "Аутентификация"
-  - name: "Управление постами"
-  - name: "Получение постов"
-
-components:
-  schemas:
-    register:
-      type: object
-      properties:
-        email:
-          type: string
-          description: "Email пользователя"
-          example: "job@example.com"
-        password:
-          type: string
-          description: "Пароль пользователя"
-        role:
-          type: string
-          enum: [ "Author", "Reader" ]
-          description: "Роль пользователя"
-    login:
-      type: object
-      properties:
-        email:
-          type: string
-          description: "Email пользователя"
-        password:
-          type: string
-          description: "Пароль пользователя"
-    tokens:
-      type: object
-      properties:
-        accessToken:
-          type: string
-          description: "Токен доступа (время жизни 2 часа)"
-        refreshToken:
-          type: string
-          description: "Токен обновления (время жизни 1 неделя)"
-    createPost:
-      type: object
-      properties:
-        idempotencyKey:
-          type: string
-          description: "Уникальный ключ"
-        title:
-          type: string
-          description: "Заголовок поста"
-        content:
-          type: string
-          description: "Содержимое поста"
-    updatePost:
-      type: object
-      properties:
-        title:
-          type: string
-          description: "Заголовок поста"
-          required: [title]
-        content:
-          type: string
-          description: "Содержимое поста"
-          required: [content]
-    getPosts:
-      type: object
-      properties:
-        title:
-          type: string
-          description: "Заголовок поста"
-        content:
-          type: string
-          description: "Содержимое поста"
-        status:
-          type: string
-          description: "Статус поста"
-          enum: [ "Draft", "Published" ]
-    securitySchemes:
-      bearerAuth:
-        type: http
-        scheme: bearer
-        bearerFormat: JWT
-
 paths:
-  /api/auth/register:
-    post:
-      tags:
-        - "Аутентификация"
-      description: "Регистрация нового пользователя"
-      operationId: "reg"
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              $ref: "#/components/schemas/register"
-      responses:
-        "200":
-          description: "Регистрация прошла успешно"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/tokens"
-        "403":
-          description: "Введенный email уже существует"
-        "400":
-          description: "Неверный формат email"
   /api/auth/login:
     post:
-      tags:
-        - "Аутентификация"
-      description: "Вход в систему"
-      operationId: "auth"
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              $ref: "#/components/schemas/login"
+      consumes:
+      - multipart/form-data
+      description: Выполняет вход в систему с указанием email и пароля
+      parameters:
+      - description: Email пользователя
+        in: formData
+        name: email
+        required: true
+        type: string
+      - description: Пароль пользователя
+        in: formData
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
       responses:
         "200":
-          description: "Вход успешен, сгенерированы новые токены"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/tokens"
+          description: Токены доступа и обновления
+          schema:
+            type: string
         "403":
-          description: "Неверный логин или пароль"
+          description: Неверный логин или пароль
+          schema:
+            type: string
+      summary: Вход в систему
+      tags:
+      - Аутентификация
   /api/auth/refresh-token:
     post:
-      tags:
-        - "Аутентификация"
-      description: "Обновление токена"
-      operationId: "refresh"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                refreshToken:
-                  type: string
-                  description: "Токен обновления"
-
-      responses:
-        "200":
-          description: "Токен доступа обновлён"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  accessToken:
-                    type: string
-                    description: "Токен доступа"
-        "400":
-          description: "Токен обновления недействителен"
-  /api/posts:
-    post:
-      tags:
-        - "Управление постами"
-      description: "Создание поста"
-      operationId: "newpost"
-      security:
-        - bearerAuth: []
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              $ref: "#/components/schemas/createPost"
-      responses:
-        "201":
-          description: "Пост успешно создан"
-        "403":
-          description: "Пользователь не является автором"
-        "409":
-          description: "Уникальный ключ уже исползьзовался"
-    get:
-      tags:
-        - "Получение постов"
-      description: "Получение списка постов"
-      operationId: "getPosts"
-      security:
-        - bearerAuth: []
-      responses:
-        "200":
-          description: "Получение списка постов"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/getPosts"
-  /api/posts/{postId}/images:
-    post:
-      tags:
-        - "Управление постами"
-      description: "Добавление картинки к посту"
-      operationId: "addimage"
-      security:
-        - bearerAuth: []
+      consumes:
+      - application/json
+      description: Обновляет токен доступа с помощью токена обновления
       parameters:
-        - in: path
-          name: postId
+      - description: Токен обновления
+        in: body
+        name: refreshToken
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Новый токен доступа
           schema:
-            type: integer
-          required: true
-          description: "Идентификатор поста"
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                image:
-                  type: array
-                  description: "Картинка к посту"
-                  items:
-                    type: string
-                    format: binary
+            type: string
+        "400":
+          description: Токен обновления недействителен
+          schema:
+            type: string
+      summary: Обновление токена
+      tags:
+      - Аутентификация
+  /api/auth/register:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Регистрирует нового пользователя с указанными email, паролем и
+        ролью
+      parameters:
+      - description: Email пользователя
+        in: formData
+        name: email
+        required: true
+        type: string
+      - description: Пароль пользователя
+        in: formData
+        name: password
+        required: true
+        type: string
+      - description: Роль пользователя (Author или Reader)
+        in: formData
+        name: role
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Токены доступа и обновления
+          schema:
+            type: string
+        "400":
+          description: Неверный формат email
+          schema:
+            type: string
+        "403":
+          description: Email уже существует
+          schema:
+            type: string
+      summary: Регистрация нового пользователя
+      tags:
+      - Аутентификация
+  /api/posts:
+    get:
+      description: Возвращает список постов
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список постов
+          schema:
+            items:
+              type: string
+            type: array
+      security:
+      - bearerAuth: []
+      summary: Получение списка постов
+      tags:
+      - Получение постов
+    post:
+      consumes:
+      - multipart/form-data
+      description: Создает новый пост с заголовком и содержимым
+      parameters:
+      - description: Уникальный ключ
+        in: formData
+        name: idempotencyKey
+        required: true
+        type: string
+      - description: Заголовок поста
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Содержимое поста
+        in: formData
+        name: content
+        required: true
+        type: string
+      produces:
+      - application/json
       responses:
         "201":
-          description: "Картинка добавлена к посту"
-        "404":
-          description: "Пост не найден"
+          description: Пост успешно создан
+          schema:
+            type: string
         "403":
-          description: "Доступ запрещен"
+          description: Пользователь не является автором
+          schema:
+            type: string
+        "409":
+          description: Уникальный ключ уже использовался
+          schema:
+            type: string
+      security:
+      - bearerAuth: []
+      summary: Создание поста
+      tags:
+      - Управление постами
   /api/posts/{postId}:
     post:
-      tags:
-        - "Управление постами"
-      description: "Редактирование поста"
-      operationId: "editpost"
-      security:
-        - bearerAuth: []
+      consumes:
+      - multipart/form-data
+      description: Редактирует пост по указанному идентификатору
       parameters:
-        - in: path
-          name: postId
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              $ref: "#/components/schemas/updatePost"
+      - description: Идентификатор поста
+        in: path
+        name: postId
+        required: true
+        type: integer
+      - description: Новый заголовок поста
+        in: formData
+        name: title
+        type: string
+      - description: Новое содержимое поста
+        in: formData
+        name: content
+        type: string
+      produces:
+      - application/json
       responses:
         "200":
-          description: "Пост успешно обновлен"
-        "404":
-          description: "Пост не найден"
+          description: Пост успешно обновлен
+          schema:
+            type: string
         "403":
-          description: "Доступ запрещен"
-
+          description: Доступ запрещен
+          schema:
+            type: string
+        "404":
+          description: Пост не найден
+          schema:
+            type: string
+      security:
+      - bearerAuth: []
+      summary: Редактирование поста
+      tags:
+      - Управление постами
+  /api/posts/{postId}/images:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Добавляет изображение к посту
+      parameters:
+      - description: Идентификатор поста
+        in: path
+        name: postId
+        required: true
+        type: integer
+      - description: Изображение
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Картинка добавлена к посту
+          schema:
+            type: string
+        "403":
+          description: Доступ запрещен
+          schema:
+            type: string
+        "404":
+          description: Пост не найден
+          schema:
+            type: string
+      security:
+      - bearerAuth: []
+      summary: Добавление картинки к посту
+      tags:
+      - Управление постами
   /api/posts/{postId}/images/{imageId}:
     delete:
-      tags:
-        - "Управление постами"
-      description: "Удаление картинки из поста"
-      operationId: "imgdelete"
-      security:
-        - bearerAuth: []
+      description: Удаляет изображение из поста по идентификатору
       parameters:
-        - in: path
-          name: postId
-          required: true
-          schema:
-            type: integer
-        - in: path
-          name: imageId
-          required: true
-          schema:
-            type: integer
+      - description: Идентификатор поста
+        in: path
+        name: postId
+        required: true
+        type: integer
+      - description: Идентификатор картинки
+        in: path
+        name: imageId
+        required: true
+        type: integer
       responses:
         "200":
-          description: "Картинка успешно удалена"
-        "404":
-          description: "Пост или картинка не найдены"
+          description: Картинка успешно удалена
+          schema:
+            type: string
         "403":
-          description: "Доступ запрещён"
-
+          description: Доступ запрещён
+          schema:
+            type: string
+        "404":
+          description: Пост или картинка не найдены
+          schema:
+            type: string
+      security:
+      - bearerAuth: []
+      summary: Удаление картинки из поста
+      tags:
+      - Управление постами
   /api/posts/{postId}/status:
     patch:
-      tags:
-        - "Управление постами"
-      description: "Публикация поста"
-      operationId: "status"
-      security:
-        - bearerAuth: []
+      consumes:
+      - multipart/form-data
+      description: Публикует пост по указанному идентификатору
       parameters:
-        - in: path
-          name: postId
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              name: status
-              type: string
-              enum: [ "Published" ]
+      - description: Идентификатор поста
+        in: path
+        name: postId
+        required: true
+        type: integer
+      - description: Статус поста (Published)
+        in: formData
+        name: status
+        required: true
+        type: string
+      produces:
+      - application/json
       responses:
         "200":
-          description: "Пост успешно опубликован"
+          description: Пост успешно опубликован
+          schema:
+            type: string
         "400":
-          description: "Неверное значение статуса"
+          description: Неверное значение статуса
+          schema:
+            type: string
         "404":
-          description: "Пост не найден"
-        "403":
-          description: "Доступ запрещен"
+          description: Пост не найден
+          schema:
+            type: string
+      security:
+      - bearerAuth: []
+      summary: Публикация поста
+      tags:
+      - Управление постами
+swagger: "2.0"
