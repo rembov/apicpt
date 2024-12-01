@@ -3,8 +3,8 @@ package handlers
 import (
 	"api/internal/services"
 	"net/http"
-
 	"github.com/gin-gonic/gin"
+
 )
 // AddImageHandler
 // @Summary Добавление картинки к посту
@@ -69,3 +69,4 @@ func DeleteImageHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Изображение удалено"})
 }
+

@@ -4,8 +4,9 @@ import (
 	"api/internal/models"
 	"api/internal/services"
 	"net/http"
-
 	"github.com/gin-gonic/gin"
+
+
 )
 
 // CreatePostHandler
@@ -128,3 +129,7 @@ func PublishPostHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Пост опубликован"})
 }
+
+
+
+
