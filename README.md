@@ -14,7 +14,7 @@
 5.Пройдите по нужному пути согласно router.go(Например 127.0.0.1:1488/api/auth/register)
 
 Тесты POSTMAN
-![Image alt](https://github.com/rembov/apicpt/raw/main/images/1.png)
+![Image alt](https://github.com/rembov/apicpt/raw/main/images/qw.png)
 ![Image alt](https://github.com/rembov/apicpt/raw/main/images/2.png)
 ![Image alt](https://github.com/rembov/apicpt/raw/main/images/3.png)
 ![Image alt](https://github.com/rembov/apicpt/raw/main/images/4.png)
