@@ -4,9 +4,10 @@ import (
 	"api/internal/models"
 	"errors"
 	"time"
-  
+
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 type AuthService struct {
 	users      map[string]models.User
@@ -15,82 +16,96 @@ type AuthService struct {
 	refreshTTL time.Duration
 
 }
-func CreatePost(title, content string) (string, error) {
-	for _, post := range models.Posts {
-		if post.Title == title {
-			return "", errors.New("уникальный ключ уже используется")
-		}
-	}
+func CreatePost(db *gorm.DB, title, content string, authorID uint) (string, error) {
+    // Проверка уникальности заголовка
+    var count int64
+    db.Model(&models.Post{}).Where("title = ?", title).Count(&count)
+    if count > 0 {
+        return "", errors.New("уникальный ключ уже используется")
+    }
 
-	postID := uuid.NewString()
-	models.Posts[postID] = models.Post{
-		ID:      postID,
-		Title:   title,
-		Content: content,
-		Status:  "Draft",
-	}
+    // Создание нового поста
+    post := models.Post{
+        ID:      uuid.NewString(),
+        Title:   title,
+        Content: content,
+        Status:  "Draft",
+        AuthorID: authorID,
+    }
+    if err := db.Create(&post).Error; err != nil {
+        return "", err
+    }
 
-	return postID, nil
+
+	return post.ID, nil
 }
 
-func GetPublishedPosts() map[string]models.Post {
-	publishedPosts := make(map[string]models.Post)
-
-	for id, post := range models.Posts {
-		if post.Status == "Published" {
-			publishedPosts[id] = post
-		}
+func GetPublishedPosts(db *gorm.DB) ([]models.Post, error) {
+	var posts []models.Post
+	if err := db.Where("status = ?", "Published").Find(&posts).Error; err != nil {
+		return nil, err
 	}
-
-	return publishedPosts
+	return posts, nil
 }
 
-func UpdatePost(postID, title, content string) error {
-	post, exists := models.Posts[postID]
-	if !exists {
+
+func UpdatePost(db *gorm.DB, postID, title, content string) error {
+	var post models.Post
+	if err := db.First(&post, "id = ?", postID).Error; err != nil {
 		return errors.New("пост не найден")
 	}
 
 	post.Title = title
 	post.Content = content
-	models.Posts[postID] = post
+	if err := db.Save(&post).Error; err != nil {
+		return err
+	}
 
 	return nil
 }
-func PublishPost(postID, status string) error {
+func PublishPost(db *gorm.DB, postID, status string) error {
 	if status != "Published" {
 		return errors.New("статус должен быть Published")
 	}
 
-	post, exists := models.Posts[postID]
-	if !exists {
+	var post models.Post
+	if err := db.First(&post, "id = ?", postID).Error; err != nil {
 		return errors.New("пост не найден")
 	}
 
 	post.Status = status
-	models.Posts[postID] = post
+	if err := db.Save(&post).Error; err != nil {
+		return err
+	}
 
 	return nil
 }
-func AddImageToPost(postID, imageURL string) error {
-	post, exists := models.Posts[postID]
-	if !exists {
+
+func AddImageToPost(db *gorm.DB, postID, imageURL string) error {
+	var post models.Post
+	if err := db.First(&post, "id = ?", postID).Error; err != nil {
 		return errors.New("пост не найден")
 	}
 
-	post.Content += "[Image: " + imageURL + "]"
-	models.Posts[postID] = post
+	post.Content += "\n[Image: " + imageURL + "]"
+	if err := db.Save(&post).Error; err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func RemoveImageFromPost(postID string) error {
-	post, exists := models.Posts[postID]
-	if !exists {
+func RemoveImageFromPost(db *gorm.DB, postID string) error {
+	var post models.Post
+	if err := db.First(&post, "id = ?", postID).Error; err != nil {
 		return errors.New("пост не найден")
 	}
 
 	post.Content = "[Image removed]"
-	models.Posts[postID] = post
+	if err := db.Save(&post).Error; err != nil {
+		return err
+	}
+
 	return nil
 }
 

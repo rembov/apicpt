@@ -5,11 +5,16 @@ import (
 	"api/internal/middleware"
 	"api/internal/services"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func SetupRouter(authService *services.AuthService) *gin.Engine {
 	r := gin.Default()
 	authHandler := handlers.NewHandler(authService)
+	r.Use(func(c *gin.Context) {
+		c.Set("db",db.DB)
+		c.Next()
+	})
 	auth := r.Group("/api/auth")
 	{
 		auth.POST("/register",authHandler.RegisterHandler)

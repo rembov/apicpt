@@ -4,9 +4,9 @@ import (
 	"api/internal/models"
 	"api/internal/services"
 	"net/http"
+
 	"github.com/gin-gonic/gin"
-
-
+	"gorm.io/gorm"
 )
 
 // CreatePostHandler
@@ -24,18 +24,25 @@ import (
 // @Failure 409 {string} string "Уникальный ключ уже использовался"
 // @Router /api/posts [post]
 func CreatePostHandler(c *gin.Context) {
+	var input models.Input
 	role, _ := c.Get("role")
 	if role != "Author" {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Пользователь не является автором"})
 		return
 	}
 
-	if err := c.ShouldBindJSON(&models.Input); err != nil {
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	postID, err := services.CreatePost(models.Input.Title, models.Input.Content)
+	// Получение объекта базы данных
+	db := c.MustGet("db").(*gorm.DB)
+
+	// Предположим, что authorID извлекается из контекста
+	authorID, _ := c.Get("userID")
+
+	postID, err := services.CreatePost(db, input.Title, input.Content, authorID.(uint))
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		return
@@ -43,6 +50,7 @@ func CreatePostHandler(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Пост успешно создан", "id": postID})
 }
+
 
 // GetPostsHandler
 // @Summary Получение списка постов
@@ -53,9 +61,17 @@ func CreatePostHandler(c *gin.Context) {
 // @Success 200 {array} string "Список постов"
 // @Router /api/posts [get]
 func GetPostsHandler(c *gin.Context) {
-	posts := services.GetPublishedPosts()
+	db := c.MustGet("db").(*gorm.DB)
+
+	posts, err := services.GetPublishedPosts(db)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, posts)
 }
+
 
 // UpdatePostHandler
 // @Summary Редактирование поста
@@ -72,6 +88,7 @@ func GetPostsHandler(c *gin.Context) {
 // @Failure 403 {string} string "Доступ запрещен"
 // @Router /api/posts/{postId} [post]
 func UpdatePostHandler(c *gin.Context) {
+	var input models.Input
 	role, _ := c.Get("role")
 	if role != "Author" && role != "Admin" {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Доступ запрещен"})
@@ -80,12 +97,14 @@ func UpdatePostHandler(c *gin.Context) {
 
 	postID := c.Param("id")
 
-	if err := c.ShouldBindJSON(&models.Input); err != nil {
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := services.UpdatePost(postID, models.Input.Title, models.Input.Content); err != nil {
+	db := c.MustGet("db").(*gorm.DB)
+
+	if err := services.UpdatePost(db, postID, input.Title, input.Content); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
@@ -122,14 +141,12 @@ func PublishPostHandler(c *gin.Context) {
 		return
 	}
 
-	if err := services.PublishPost(postID, input.Status); err != nil {
+	db := c.MustGet("db").(*gorm.DB)
+
+	if err := services.PublishPost(db, postID, input.Status); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Пост опубликован"})
 }
-
-
-
-

@@ -1,14 +1,15 @@
 package main
 
 import (
-	"log"
-
 	"api/internal/router"
-	"api/internal/services"
+	"api/internal/models"
 )
 
 func main() {
-	authService := &services.AuthService{}
-	r := router.SetupRouter(authService)
-	log.Fatal(r.Run(":1488"))
+	// Инициализация базы данных
+	db := models.InitDB()
+
+	// Создание роутера и передача базы данных
+	r := router.SetupRouter(db)
+	r.Run(":1488")
 }
