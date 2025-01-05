@@ -7,17 +7,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
-
-func SetupRouter(authService *services.AuthService) *gin.Engine {
+func SetupRouter(db *gorm.DB, authService *services.AuthService) *gin.Engine {
 	r := gin.Default()
+
 	authHandler := handlers.NewHandler(authService)
 	r.Use(func(c *gin.Context) {
-		c.Set("db",db.DB)
+		c.Set("db", db) // Передаем базу данных через контекст
 		c.Next()
 	})
+
 	auth := r.Group("/api/auth")
 	{
-		auth.POST("/register",authHandler.RegisterHandler)
+		auth.POST("/register", authHandler.RegisterHandler)
 		auth.POST("/login", authHandler.LoginHandler)
 		auth.POST("/refresh-token", authHandler.RefreshTokenHandler)
 	}

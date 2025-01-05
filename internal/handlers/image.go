@@ -3,9 +3,11 @@ package handlers
 import (
 	"api/internal/services"
 	"net/http"
-	"github.com/gin-gonic/gin"
 
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
+
 // AddImageHandler
 // @Summary Добавление картинки к посту
 // @Tags Управление постами
@@ -20,28 +22,43 @@ import (
 // @Failure 403 {string} string "Доступ запрещен"
 // @Router /api/posts/{postId}/images [post]
 func AddImageHandler(c *gin.Context) {
-	role, _ := c.Get("role")
-	if role != "Admin" && role != "Author" {
+	role, exists := c.Get("role")
+	if !exists || (role != "Admin" && role != "Author") {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Доступ запрещен"})
 		return
 	}
 
 	postID := c.Param("postId")
-	var input struct {
-		ImageURL string `json:"image_url" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	file, err := c.FormFile("image")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Не удалось загрузить файл"})
 		return
 	}
 
-	if err := services.AddImageToPost(postID, input.ImageURL); err != nil {
+	// Сохраняем файл
+	path := "./uploads/" + file.Filename
+	if err := c.SaveUploadedFile(file, path); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка сохранения файла"})
+		return
+	}
+
+	// Получаем объект базы данных из контекста
+	db, exists := c.Get("db")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка базы данных"})
+		return
+	}
+
+	// Добавляем изображение к посту
+	if err := services.AddImageToPost(db.(*gorm.DB), postID, path); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Изображение добавлено"})
+	c.JSON(http.StatusCreated, gin.H{"message": "Изображение добавлено", "path": path})
 }
+
+
 // DeleteImageHandler
 // @Summary Удаление картинки из поста
 // @Tags Управление постами
@@ -53,20 +70,30 @@ func AddImageHandler(c *gin.Context) {
 // @Failure 404 {string} string "Пост или картинка не найдены"
 // @Failure 403 {string} string "Доступ запрещён"
 // @Router /api/posts/{postId}/images/{imageId} [delete]
+
+
 func DeleteImageHandler(c *gin.Context) {
-	role, _ := c.Get("role")
-	if role != "Admin" {
+	role, exists := c.Get("role")
+	if !exists || role != "Admin" {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Доступ запрещен"})
 		return
 	}
 
 	postID := c.Param("postId")
+	imageID := c.Param("imageId")
 
-	if err := services.RemoveImageFromPost(postID); err != nil {
+	// Получаем объект базы данных из контекста
+	db, exists := c.Get("db")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка базы данных"})
+		return
+	}
+
+	// Удаляем изображение
+	if err := services.RemoveImageFromPost(db.(*gorm.DB), postID, imageID); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Изображение удалено"})
 }
-

@@ -87,6 +87,7 @@ func AddImageToPost(db *gorm.DB, postID, imageURL string) error {
 		return errors.New("пост не найден")
 	}
 
+	// Добавляем информацию об изображении
 	post.Content += "\n[Image: " + imageURL + "]"
 	if err := db.Save(&post).Error; err != nil {
 		return err
@@ -94,13 +95,13 @@ func AddImageToPost(db *gorm.DB, postID, imageURL string) error {
 
 	return nil
 }
-
-func RemoveImageFromPost(db *gorm.DB, postID string) error {
+func RemoveImageFromPost(db *gorm.DB, postID, imageID string) error {
 	var post models.Post
 	if err := db.First(&post, "id = ?", postID).Error; err != nil {
 		return errors.New("пост не найден")
 	}
 
+	// Удаляем изображение
 	post.Content = "[Image removed]"
 	if err := db.Save(&post).Error; err != nil {
 		return err
@@ -108,7 +109,6 @@ func RemoveImageFromPost(db *gorm.DB, postID string) error {
 
 	return nil
 }
-
 func NewAuthService(tokenTTL, refreshTTL time.Duration) *AuthService {
 	return &AuthService{
 		users:      make(map[string]models.User),
