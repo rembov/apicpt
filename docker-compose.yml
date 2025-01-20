@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "1488:1488"
+    volumes:
+      - ./models/negri.db:/root/negri.db
+    environment:
+      - DB_PATH=./negri.db
+    restart: unless-stopped
+  db: 
+    image: postgres:13
+    environment:
+      POSTGRES_DB: Negri
+      POSTGRES_PASSWORD: AuX2313gdr
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
