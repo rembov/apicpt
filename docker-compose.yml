@@ -1,18 +1,27 @@
-version: '3.8'
 services:
   app:
     build: .
     ports:
       - "1488:1488"
-    volumes:
-      - ./models/negri.db:/root/negri.db
+    depends_on:
+      - postgres
     environment:
-      - DB_PATH=./negri.db
-    restart: unless-stopped
-  db: 
-    image: postgres:13
+      - DB_HOST=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=AuX2313gdr
+      - DB_NAME=Negri
+      - DB_PORT=5432
+
+  postgres:
+    image: postgres:latest
     environment:
-      POSTGRES_DB: Negri
-      POSTGRES_PASSWORD: AuX2313gdr
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=AuX2313gdr
+      - POSTGRES_DB=Negri
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
