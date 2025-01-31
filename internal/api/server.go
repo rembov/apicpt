@@ -1,7 +1,7 @@
-package router
+package api
 
 import (
-	"apicpt/internal/handlers"
+	"apicpt/internal/api/handlers"
 	"apicpt/internal/middleware"
 	"apicpt/internal/services"
 	"github.com/gin-gonic/gin"
