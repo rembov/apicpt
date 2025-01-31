@@ -13,15 +13,18 @@ services:
       - DB_PORT=5432
 
   postgres:
-    image: postgres:latest
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=negr321
-      - POSTGRES_DB=Negri
-    ports:
-      - "5432:5432"
+    image: postgres:16.0
+    container_name: db
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: db
+      POSTGRES_PASSWORD: db1234
+      POSTGRES_DB: postgres
+    ports:
+      - "5455:5432"
 
 volumes:
-  postgres_data:
+  postgres-data:
+
+
