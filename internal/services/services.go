@@ -1,7 +1,7 @@
 package services
 
 import (
-	"api/internal/models"
+	"apicpt/internal/models"
 	"errors"
 	"time"
 
@@ -9,33 +9,33 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
+
 type AuthService struct {
 	users      map[string]models.User
 	tokens     map[string]models.Token
 	tokenTTL   time.Duration
 	refreshTTL time.Duration
-
 }
+
 func CreatePost(db *gorm.DB, title, content string, authorID uint) (string, error) {
-    // Проверка уникальности заголовка
-    var count int64
-    db.Model(&models.Post{}).Where("title = ?", title).Count(&count)
-    if count > 0 {
-        return "", errors.New("уникальный ключ уже используется")
-    }
+	// Проверка уникальности заголовка
+	var count int64
+	db.Model(&models.Post{}).Where("title = ?", title).Count(&count)
+	if count > 0 {
+		return "", errors.New("уникальный ключ уже используется")
+	}
 
-    // Создание нового поста
-    post := models.Post{
-        ID:      uuid.NewString(),
-        Title:   title,
-        Content: content,
-        Status:  "Draft",
-        AuthorID: authorID,
-    }
-    if err := db.Create(&post).Error; err != nil {
-        return "", err
-    }
-
+	// Создание нового поста
+	post := models.Post{
+		ID:       uuid.NewString(),
+		Title:    title,
+		Content:  content,
+		Status:   "Draft",
+		AuthorID: authorID,
+	}
+	if err := db.Create(&post).Error; err != nil {
+		return "", err
+	}
 
 	return post.ID, nil
 }
@@ -47,7 +47,6 @@ func GetPublishedPosts(db *gorm.DB) ([]models.Post, error) {
 	}
 	return posts, nil
 }
-
 
 func UpdatePost(db *gorm.DB, postID, title, content string) error {
 	var post models.Post

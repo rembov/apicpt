@@ -84,7 +84,7 @@ type Database struct {
 
 // Инициализация базы данных
 func InitDB() *gorm.DB {
-	dsn := "host=127.0.0.1 user=postgres password=AuX2313gdr dbname=Negri port=5432 sslmode=disable"
+	dsn := "host=localhost user=db password=db1234 dbname=postgres port=5455 sslmode=disable"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Ошибка подключения к базе данных: %v", err)

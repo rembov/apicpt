@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"api/internal/models"
-	"api/internal/services"
+	"apicpt/internal/models"
+	"apicpt/internal/services"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -51,7 +51,6 @@ func CreatePostHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "Пост успешно создан", "id": postID})
 }
 
-
 // GetPostsHandler
 // @Summary Получение списка постов
 // @Tags Получение постов
@@ -71,7 +70,6 @@ func GetPostsHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, posts)
 }
-
 
 // UpdatePostHandler
 // @Summary Редактирование поста

@@ -1,11 +1,10 @@
 package handlers
 
 import (
-	"api/internal/middleware"
-	"api/internal/services"
-	"net/http"
+	middleware "apicpt/internal/middleware"
+	"apicpt/internal/services"
 	"github.com/gin-gonic/gin"
-	
+	"net/http"
 )
 
 type Handler struct {

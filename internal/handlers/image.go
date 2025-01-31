@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"api/internal/services"
+	"apicpt/internal/services"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -58,7 +58,6 @@ func AddImageHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "Изображение добавлено", "path": path})
 }
 
-
 // DeleteImageHandler
 // @Summary Удаление картинки из поста
 // @Tags Управление постами
@@ -70,7 +69,6 @@ func AddImageHandler(c *gin.Context) {
 // @Failure 404 {string} string "Пост или картинка не найдены"
 // @Failure 403 {string} string "Доступ запрещён"
 // @Router /api/posts/{postId}/images/{imageId} [delete]
-
 
 func DeleteImageHandler(c *gin.Context) {
 	role, exists := c.Get("role")

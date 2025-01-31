@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"api/internal/models"
+	"apicpt/internal/models"
 	"net/http"
 	"time"
 

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"api/internal/models"
-	"api/internal/router"
-	"api/internal/services"
+	"apicpt/internal/models"
+	"apicpt/internal/router"
+	"apicpt/internal/services"
 	"time"
 )
 
@@ -17,4 +17,3 @@ func main() {
 	r := router.SetupRouter(db, authService)
 	r.Run(":1488")
 }
-

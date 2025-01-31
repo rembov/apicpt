@@ -1,12 +1,13 @@
 package router
 
 import (
-	"api/internal/handlers"
-	"api/internal/middleware"
-	"api/internal/services"
+	"apicpt/internal/handlers"
+	"apicpt/internal/middleware"
+	"apicpt/internal/services"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
+
 func SetupRouter(db *gorm.DB, authService *services.AuthService) *gin.Engine {
 	r := gin.Default()
 
