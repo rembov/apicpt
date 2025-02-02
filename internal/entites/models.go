@@ -9,19 +9,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// Модель поста
-type Post struct {
-	gorm.Model
-	ID        string `gorm:"primaryKey"`
-	Title     string
-	Content   string
-	Status    string
-	AuthorID  uint
-	Author    User `gorm:"foreignKey:AuthorID"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-}
-
 // Модель пользователя
 type User struct {
 	gorm.Model
@@ -70,13 +57,6 @@ type InputLogin struct {
 	Password string `json:"password" binding:"required"`
 }
 
-// Сервис аутентификации
-type AuthService struct {
-	db         *gorm.DB
-	tokenTTL   time.Duration
-	refreshTTL time.Duration
-}
-
 // Структура подключения к БД
 type Database struct {
 	DB *gorm.DB
@@ -100,23 +80,10 @@ func InitDB() *gorm.DB {
 }
 
 // Создание нового сервиса аутентификации
-func NewAuthService(db *gorm.DB, tokenTTL, refreshTTL time.Duration) *AuthService {
-	return &AuthService{
-		db:         db,
-		tokenTTL:   tokenTTL,
-		refreshTTL: refreshTTL,
-	}
-}
 
 // Методы для работы с постами
 func (db *Database) CreatePost(post *Post) error {
 	return db.DB.Create(post).Error
-}
-
-func (db *Database) GetPost(id string) (*Post, error) {
-	var post Post
-	err := db.DB.First(&post, "id = ?", id).Error
-	return &post, err
 }
 
 func (db *Database) UpdatePost(post *Post) error {

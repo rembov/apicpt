@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"apicpt/internal/models"
+	"apicpt/internal/entites"
 	"apicpt/internal/services"
 	"net/http"
 

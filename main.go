@@ -2,7 +2,7 @@ package main
 
 import (
 	"apicpt/internal/api"
-	"apicpt/internal/models"
+	"apicpt/internal/entites"
 	"apicpt/internal/services"
 	"time"
 )
