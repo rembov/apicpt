@@ -1,7 +1,7 @@
 package services
 
 import (
-	"apicpt/internal/models"
+	"apicpt/internal/entites"
 	"errors"
 	"time"
 
