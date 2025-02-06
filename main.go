@@ -15,5 +15,5 @@ func main() {
 	authService := services.NewAuthService(tokenTTL, refreshTTL)
 
 	r := api.SetupRouter(db, authService)
-	r.Run(":1488")
+	r.Run(":1488") // можно сделать файл с конфигом
 }
